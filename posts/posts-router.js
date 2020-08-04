@@ -37,12 +37,30 @@ router.post("/", (req, res) => {
 
 // 	Returns the post object with the specified id.
 router.get("/:id", (req, res) => {
-  res.status(200).json({
-    router: "posts",
-    url: "/api/posts/:id",
-    method: "GET",
-    id: req.params.id,
-  });
+  const id = req.params.id;
+
+  db.findById(id)
+    .then((data) => {
+      if (data.length) {
+        res.status(200).json(data);
+      } else {
+        res
+          .status(404)
+          .json({ message: "The post with the specified ID does not exist." });
+      }
+    })
+    .catch((error) => {
+      res
+        .status(500)
+        .json({ error: "The post information could not be retrieved." });
+    });
+
+  //   res.status(200).json({
+  //     router: "posts",
+  //     url: "/api/posts/:id",
+  //     method: "GET",
+  //     id: req.params.id,
+  //   });
 });
 
 // Updates the post with the specified id using data from the request body. Returns the modified document, NOT the original.
