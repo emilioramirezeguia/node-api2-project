@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const db = require("../data/db");
 
-// Returns an array of all the post objects contained in the database.
+// GET all blog posts.
 router.get("/", (req, res) => {
   db.find()
     .then((data) => {
@@ -14,9 +14,25 @@ router.get("/", (req, res) => {
     });
 });
 
-// Creates a post using the information sent inside the request body.
+// POST a new blog post.
 router.post("/", (req, res) => {
-  res.status(200).json({ router: "posts", url: "/api/posts", method: "POST" });
+  const post = req.body;
+
+  if (!post.title || !post.contents) {
+    res.status(400).res.json({
+      errorMessage: "Please provide title and contents for the post.",
+    });
+  }
+
+  db.insert(post)
+    .then((data) => {
+      res.status(201).json(post);
+    })
+    .catch((error) => {
+      res.status(500).json({
+        error: "There was an error while saving the post to the database",
+      });
+    });
 });
 
 // 	Returns the post object with the specified id.
