@@ -1,8 +1,17 @@
 const router = require("express").Router();
+const db = require("../data/db");
 
 // Returns an array of all the post objects contained in the database.
 router.get("/", (req, res) => {
-  res.status(200).json({ router: "posts", url: "/api/posts", method: "GET" });
+  db.find()
+    .then((data) => {
+      res.status(200).json({ posts: data });
+    })
+    .catch((error) => {
+      res
+        .status(500)
+        .json({ error: "The posts information could not be retrieved." });
+    });
 });
 
 // Creates a post using the information sent inside the request body.
