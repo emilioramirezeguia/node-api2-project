@@ -116,7 +116,7 @@ router.delete("/:id", (req, res) => {
     });
 });
 
-// Returns an array of all the comment objects associated with the post with the specified id.
+// GET comments for existing blog post.
 router.get("/:id/comments", (req, res) => {
   const id = req.params.id;
 
@@ -137,14 +137,51 @@ router.get("/:id/comments", (req, res) => {
     });
 });
 
-// Creates a comment for the post with the specified id using information sent inside of the request body.
+// POST comment to existing blog post.
 router.post("/:id/comments", (req, res) => {
-  res.status(200).json({
-    router: "posts",
-    url: "/api/posts/:id/comments",
-    method: "POST",
-    id: req.params.id,
-  });
+  const id = req.params.id;
+  const comment = req.body;
+
+  db.findById(id)
+    .then((response) => {
+      if (!response) {
+        res
+          .status(404)
+          .json({ message: "The post with the specified ID does not exist." });
+      } else {
+        if (!comment.text) {
+          res
+            .status(400)
+            .json({ errorMessage: "Please provide text for the comment." });
+        } else {
+          const newComment = {
+            ...comment,
+            post_id: id,
+          };
+          db.insertComment(newComment)
+            .then((response) => {
+              const commentID = response.id;
+              db.findCommentById(commentID).then((response) => {
+                res.status(200).json(response);
+              });
+            })
+            .catch((error) => {
+              res
+                .status(404)
+                .json({
+                  message: "The comment with the specified ID does not exist.",
+                });
+            });
+        }
+      }
+    })
+    .catch((error) => {
+      res
+        .status(500)
+        .json({
+          error: "There was an error while saving the comment to the database",
+        });
+    });
 });
 
 module.exports = router;
